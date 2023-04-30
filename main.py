@@ -36,26 +36,37 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 class CustomClassifier(torch.nn.Module):
-    def __init__(self, model, input_dim, output_dim, 
+    def __init__(self, model, input_dim, output_dim, model_type=None,
                     multi_dataset_classes=None, known_data_source=False):
         '''
         Custom classifier with a Norm layer followed by a Linear layer.
         '''
         super().__init__()
         self.backbone = model
+        self.inner_dim = input_dim
 
         self.known_data_source = known_data_source
         self.multi_dataset_classes = multi_dataset_classes
-        self.channel_bn = torch.nn.BatchNorm1d(
-            input_dim,
-            affine=False,
-        )
-        self.layers = torch.nn.Sequential(torch.nn.Linear(input_dim, output_dim))
+
+        if model_type == 'efficientnet':
+            self.inner_dim = 512
+            self.channel_bn = torch.nn.Sequential(
+                            torch.nn.Flatten(),
+                            torch.nn.Linear(input_dim*7*7, self.inner_dim))
+            # [batch_size * num_features * kernel_size * kernel_size] --> [batch_size, inner_dim]
+        else:
+            self.channel_bn = torch.nn.BatchNorm1d(  # if model_type == 'deit':
+                input_dim,
+                affine=False,
+            )
+            # [batch_size * num_features] --> [batch_size * inner_dim] (inner_dim = num_features]
+        self.layers = torch.nn.Sequential(torch.nn.Linear(self.inner_dim, output_dim))
 
     def forward(self, img, dataset_id=None):
         # TODO: how to leverage dataset_source in training and infernece stage?
         pdtype = img.dtype
-        feature = self.backbone.forward_features(img).to(pdtype) # 把backbone模型作为特征抽取器
+        feature = self.backbone.forward_features(img).to(pdtype)  # 把backbone模型作为特征抽取器
+        #print(feature.shape)
         outputs = self.channel_bn(feature)
         outputs = self.layers(outputs)
         return outputs
@@ -77,6 +88,8 @@ def get_args_parser():
     # Model parameters
     parser.add_argument('--model', default='deit_tiny_patch16_224', type=str, metavar='MODEL',
                         help='Name of model to train')
+    parser.add_argument('--model_type', default='deit', type=str, metavar='MODEL',
+                        help='Type of model to train')
     parser.add_argument('--input-size', default=224, type=int, help='images input size')
 
     parser.add_argument('--drop', type=float, default=0.0, metavar='PCT',
@@ -300,7 +313,12 @@ def main(args):
     # number of classes for each dataset
     multi_dataset_classes = [len(x) for x in dataset_train.classes_list]
 
-    model = CustomClassifier(model, model.embed_dim, args.nb_classes, multi_dataset_classes=multi_dataset_classes, known_data_source=args.known_data_source)
+    # 根据backbone不同来定义Classifier
+    if 'deit' in args.model:
+        args.model_type = 'deit'
+    elif 'efficientnet' in args.model:
+        args.model_type = 'efficientnet'
+    model = CustomClassifier(model, model.num_features, args.nb_classes, args.model_type, multi_dataset_classes=multi_dataset_classes, known_data_source=args.known_data_source)
                     
     model.to(device)
 
