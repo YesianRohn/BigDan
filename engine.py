@@ -112,7 +112,7 @@ def evaluate(data_loader, model, device, dataset_id=None, dump_result=False):
 
 
 @torch.no_grad()
-def test(data_loader, model, device, dataset_id=None, num_classes_list=None, know_dataset=True):
+def test(data_loader, model, device, dataset_id=None, num_classes_list=None, str_classes_list=None, know_dataset=True):
 
     metric_logger = utils.MetricLogger(delimiter="  ")
     header = 'Test:'
@@ -146,6 +146,6 @@ def test(data_loader, model, device, dataset_id=None, num_classes_list=None, kno
             pred_labels = output.max(-1)[1].tolist()
 
         for id, pred_id in zip(file_ids, pred_labels) :
-            result_json[id] = pred_id
+            result_json[id] = str_classes_list[pred_id]
 
     return result_json
