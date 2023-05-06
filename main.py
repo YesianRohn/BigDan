@@ -174,7 +174,7 @@ def get_args_parser():
     parser.add_argument('--finetune', default='', help='finetune from checkpoint')
     
     # Dataset parameters
-    parser.add_argument('--data-path', default='/datasets01/imagenet_full_size/061417/', type=str,
+    parser.add_argument('--data-path', default='../test_data/', type=str,
                         help='dataset path')
     parser.add_argument('--data-set', default='IMNET', choices=['CIFAR', 'IMNET', 'INAT', 'INAT19'],
                         type=str, help='Image Net dataset path')
@@ -212,10 +212,33 @@ def _print_args(args):
     for arg in vars(args):
         logger.info('>>> {0}: {1}'.format(arg, getattr(args, arg)))
 
+def get_grade(pred_path): 
+    dataset=args.dataset_list
+
+    with open(pred_path, "r") as f1:
+        pred = json.load(f1)
+
+    with open("../test_data/ans_all.json", "r") as f2:
+        ans = json.load(f2)
+
+    grade =0 
+
+    for i in range (len(dataset)):
+        match_count = 0
+        total_count = len(ans[dataset[i]])
+
+        for key, value in ans[dataset[i]].items():
+            if key in pred[dataset[i]] and pred[dataset[i]][key] == value:
+                match_count += 1
+
+        match_rate = match_count / total_count
+        grade += match_rate * 100 / len(dataset)
+
+    print("Grade: "+ str(grade)+ "/100")
 
 def main(args):
     
-    #print(args.dataset_list)
+    # print(args.dataset_list)
     utils.init_distributed_mode(args)
     
     log_file =  '{}/{}-{}.log'.format(args.output_dir, args.model, strftime("%y%m%d-%H%M", localtime()))
@@ -236,7 +259,7 @@ def main(args):
 
     # 导入数据
     # args.nb_classes is the sum of number of classes for all datasets
-    dataset_train, args.nb_classes = build_dataset(is_train=True, args=args)
+    dataset_train, args.nb_classes, class_list = build_dataset(is_train=True, args=args)
     dataset_val, *_ = build_dataset(is_train=False, args=args)
     
     # 定义采样方式
@@ -397,11 +420,13 @@ def main(args):
         result_list = {}
         result_list['n_parameters'] = n_parameters
         for dataset_id, data_loader_val in enumerate(data_loader_val_list):
-            pred_json = test(data_loader_val, model, device, dataset_id, num_classes_list=multi_dataset_classes,
+            pred_json = test(data_loader_val, model, device, dataset_id, num_classes_list=multi_dataset_classes, str_classes_list=class_list,
                                 know_dataset=args.known_data_source)
             result_list[args.dataset_list[dataset_id]] = pred_json
         with open(pred_path, 'w') as f:
             json.dump(result_list, f)
+
+        get_grade(pred_path)
         return
 
     # 评估：验证

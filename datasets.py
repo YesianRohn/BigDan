@@ -78,7 +78,8 @@ class TestFolder(data.Dataset):
 
     def get_image_id(self, path):
         file_name = path.split('/')[-1]
-        id_name = file_name.split('.')[0]
+        id_name = file_name.rsplit('.',1)[0].split('_')[-1] 
+
         return int(id_name)
 
     def __getitem__(self, index) :
@@ -103,6 +104,7 @@ def build_dataset(is_train, args):
     transform = build_transform(is_train, args)
 
     dataset_list = []
+    class_list = []
     nb_classes = 0
 
     if is_test:
@@ -117,12 +119,12 @@ def build_dataset(is_train, args):
         for dataset in args.dataset_list :
             root = os.path.join(args.data_path, dataset, 'train' if is_train else 'val')
             dataset = datasets.ImageFolder(root, transform=transform)
+            class_list.append(dataset.classes)
             dataset_list.append(dataset)
             nb_classes += len(dataset.classes)
-
         multi_dataset = MultiImageFolder(dataset_list, transform, known_data_source=args.known_data_source)
 
-        return multi_dataset, nb_classes
+        return multi_dataset, nb_classes , class_list
 
 
 def build_transform(is_train, args, img_size=224,
