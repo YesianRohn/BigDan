@@ -26,29 +26,47 @@ from samplers import RASampler
 import models
 import utils
 import random
+import logging
+import sys
+from time import strftime, localtime
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 class CustomClassifier(torch.nn.Module):
-    def __init__(self, model, input_dim, output_dim, 
+    def __init__(self, model, input_dim, output_dim, model_type=None,
                     multi_dataset_classes=None, known_data_source=False):
         '''
         Custom classifier with a Norm layer followed by a Linear layer.
         '''
         super().__init__()
         self.backbone = model
+        self.inner_dim = input_dim
 
         self.known_data_source = known_data_source
         self.multi_dataset_classes = multi_dataset_classes
-        self.channel_bn = torch.nn.BatchNorm1d(
-            input_dim,
-            affine=False,
-        )
-        self.layers = torch.nn.Sequential(torch.nn.Linear(input_dim, output_dim))
+
+        if model_type == 'efficientnet':
+            self.inner_dim = 512
+            self.channel_bn = torch.nn.Sequential(
+                            torch.nn.Flatten(),
+                            torch.nn.Linear(input_dim*7*7, self.inner_dim))
+            # [batch_size * num_features * kernel_size * kernel_size] --> [batch_size, inner_dim]
+        else:
+            self.channel_bn = torch.nn.BatchNorm1d(  # if model_type == 'deit':
+                input_dim,
+                affine=False,
+            )
+            # [batch_size * num_features] --> [batch_size * inner_dim] (inner_dim = num_features]
+        self.layers = torch.nn.Sequential(torch.nn.Linear(self.inner_dim, output_dim))
 
     def forward(self, img, dataset_id=None):
         # TODO: how to leverage dataset_source in training and infernece stage?
         pdtype = img.dtype
-        feature = self.backbone.forward_features(img).to(pdtype)
+        feature = self.backbone.forward_features(img).to(pdtype)  # 把backbone模型作为特征抽取器
+        #print(feature.shape)
         outputs = self.channel_bn(feature)
         outputs = self.layers(outputs)
         return outputs
@@ -70,6 +88,8 @@ def get_args_parser():
     # Model parameters
     parser.add_argument('--model', default='deit_tiny_patch16_224', type=str, metavar='MODEL',
                         help='Name of model to train')
+    parser.add_argument('--model_type', default='deit', type=str, metavar='MODEL',
+                        help='Type of model to train')
     parser.add_argument('--input-size', default=224, type=int, help='images input size')
 
     parser.add_argument('--drop', type=float, default=0.0, metavar='PCT',
@@ -186,12 +206,23 @@ def get_args_parser():
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
     return parser
 
+# 参数打印
+def _print_args(args):
+    logger.info('> training arguments:')
+    for arg in vars(args):
+        logger.info('>>> {0}: {1}'.format(arg, getattr(args, arg)))
+
 
 def main(args):
-    print(args.dataset_list)
+    
+    #print(args.dataset_list)
     utils.init_distributed_mode(args)
-
-    print(args)
+    
+    log_file =  '{}/{}-{}.log'.format(args.output_dir, args.model, strftime("%y%m%d-%H%M", localtime()))
+    logger.addHandler(logging.FileHandler(log_file))
+    #print(args)
+    logger.info('=======hyper-parameter used========')
+    _print_args(args)
 
     device = torch.device(args.device)
 
@@ -203,10 +234,12 @@ def main(args):
 
     cudnn.benchmark = True
 
+    # 导入数据
     # args.nb_classes is the sum of number of classes for all datasets
     dataset_train, args.nb_classes = build_dataset(is_train=True, args=args)
     dataset_val, *_ = build_dataset(is_train=False, args=args)
-
+    
+    # 定义采样方式
     if True:  # args.distributed:
         num_tasks = utils.get_world_size()
         global_rank = utils.get_rank()
@@ -218,9 +251,10 @@ def main(args):
             sampler_train = torch.utils.data.DistributedSampler(
                 dataset_train, num_replicas=num_tasks, rank=global_rank, shuffle=True
             )
+        # 是否分布式校验
         if args.dist_eval:
             if len(dataset_val) % num_tasks != 0:
-                print('Warning: Enabling distributed evaluation with an eval dataset not divisible by process number. '
+                logger.info('Warning: Enabling distributed evaluation with an eval dataset not divisible by process number. '
                       'This will slightly alter validation results as extra duplicate entries are added to achieve '
                       'equal num of samples per-process.')
             sampler_val = torch.utils.data.DistributedSampler(
@@ -228,6 +262,7 @@ def main(args):
         else:
             sampler_val = torch.utils.data.SequentialSampler(dataset_val)
 
+    # 训练集dataloader
     if args.known_data_source :
         data_loader_train = torch.utils.data.DataLoader(
             dataset_train, sampler=sampler_train,
@@ -236,6 +271,7 @@ def main(args):
             pin_memory=args.pin_mem,
             collate_fn=operator.itemgetter(0), 
         )
+        # 知道数据来源，按照idx group
         data_loader_train = GroupedDataset(data_loader_train, args.batch_size, len(args.dataset_list))
     else :
         data_loader_train = torch.utils.data.DataLoader(
@@ -245,12 +281,13 @@ def main(args):
             pin_memory=args.pin_mem,
         )
 
+    # 验证集dataloader
     data_loader_val_list = []
     dataset_val_total = dataset_val
     for dataset_val in dataset_val.dataset_list:
         if args.dist_eval:
             if len(dataset_val) % num_tasks != 0:
-                print('Warning: Enabling distributed evaluation with an eval dataset not divisible by process number. '
+                logger.info('Warning: Enabling distributed evaluation with an eval dataset not divisible by process number. '
                     'This will slightly alter validation results as extra duplicate entries are added to achieve '
                     'equal num of samples per-process.')
             sampler_val = torch.utils.data.DistributedSampler(
@@ -267,15 +304,21 @@ def main(args):
         )
         data_loader_val_list.append(data_loader_val)
 
-    print(f"Creating model: {args.model}")
+    logger.info(f"Creating model: {args.model}")
     
+    # 定义模型
     # Create a model with the timm function; any other model pre-trained under ImageNet-1k is allowed.
     model = create_model(args.model, num_classes=args.nb_classes, pretrained=True)
     
     # number of classes for each dataset
     multi_dataset_classes = [len(x) for x in dataset_train.classes_list]
 
-    model = CustomClassifier(model, model.embed_dim, args.nb_classes, multi_dataset_classes=multi_dataset_classes, known_data_source=args.known_data_source)
+    # 根据backbone不同来定义Classifier
+    if 'deit' in args.model:
+        args.model_type = 'deit'
+    elif 'efficientnet' in args.model:
+        args.model_type = 'efficientnet'
+    model = CustomClassifier(model, model.num_features, args.nb_classes, args.model_type, multi_dataset_classes=multi_dataset_classes, known_data_source=args.known_data_source)
                     
     model.to(device)
 
@@ -293,7 +336,7 @@ def main(args):
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
         model_without_ddp = model.module
     n_parameters = sum(p.numel() for p in model.parameters())
-    print('number of params:', n_parameters)
+    logger.info('number of params:{}'.format(n_parameters) )
 
     backbone_params = [x for name, x in model_without_ddp.named_parameters() if 'backbone' in name]
     custom_params = [x for name, x in model_without_ddp.named_parameters() if 'backbone' not in name]
@@ -303,6 +346,7 @@ def main(args):
                 {'params': backbone_params, 'lr': args.lr * 0.1},
                 {'params': custom_params}
     ]
+    # 定义优化器
     optimizer = torch.optim.AdamW(
         params,
         lr=args.lr,
@@ -310,8 +354,10 @@ def main(args):
     )
 
     loss_scaler = NativeScaler()
+    # 定义lr_schduler
     lr_scheduler, _ = create_scheduler(args, optimizer)
     
+    # loss设置
     if args.smoothing:
         criterion = LabelSmoothingCrossEntropy(smoothing=args.smoothing)
     else:
@@ -338,6 +384,7 @@ def main(args):
                 loss_scaler.load_state_dict(checkpoint['scaler'])
         lr_scheduler.step(args.start_epoch)
     
+    # 评估：测试
     if args.test_only:
         # the format of submitted json
         # {
@@ -357,15 +404,17 @@ def main(args):
             json.dump(result_list, f)
         return
 
+    # 评估：验证
     if args.eval:
         for dataset_id, data_loader_val in enumerate(data_loader_val_list):
             test_stats = evaluate(data_loader_val, model, device, dataset_id)
-            print(f"Accuracy of the network on {args.dataset_list[dataset_id]} of {len(dataset_val_total.dataset_list[dataset_id])} "
+            logger.info(f"Accuracy of the network on {args.dataset_list[dataset_id]} of {len(dataset_val_total.dataset_list[dataset_id])} "
                     f"test images: {test_stats['acc1']:.1f}%")
 
         return
 
-    print(f"Start training for {args.epochs} epochs")
+    # 开始训练
+    logger.info("===========start training: {} epochs===========".format(args.epochs))
     start_time = time.time()
     max_accuracy = 0.0
     for epoch in range(args.start_epoch, args.epochs):
@@ -382,6 +431,7 @@ def main(args):
 
         # TODO: Consistent lr now
         # how to use a lr scheduler for better convergence.
+        # checkpoint保存
         if args.output_dir:
             checkpoint_paths = [output_dir / 'checkpoint.pth']
             for checkpoint_path in checkpoint_paths:
@@ -395,15 +445,18 @@ def main(args):
                     'args': args,
                 }, checkpoint_path)
              
+        # 训练过程中验证
         if (epoch + 1) % 10 == 0 or epoch + 1 == args.epochs :
             test_stats_total = {}
             test_stats_list = []
             for dataset_id, data_loader_val in enumerate(data_loader_val_list):
                 test_stats = evaluate(data_loader_val, model, device, dataset_id)
                 test_stats_list.append(test_stats)
-                print(f"Accuracy of the network on {args.dataset_list[dataset_id]} of {len(dataset_val_total.dataset_list[dataset_id])} test images: {test_stats['acc1']:.1f}%")
+                logger.info(f"Accuracy of the network on {args.dataset_list[dataset_id]} of {len(dataset_val_total.dataset_list[dataset_id])} test images: {test_stats['acc1']:.1f}%")
+                test_stats_one = {}
                 for k, v in test_stats.items():
-                    test_stats_total['dataset_{}_{}'.format(args.dataset_list[dataset_id], k)] = v
+                    test_stats_one[k] = v
+                test_stats_total['{}'.format(args.dataset_list[dataset_id])] = test_stats_one
 
             sum_acc = sum([x['acc1'] for x in test_stats_list])
             if max_accuracy < sum_acc:
@@ -421,20 +474,27 @@ def main(args):
                             'args': args,
                         }, checkpoint_path)
                 
-            print(f'Max accuracy: {max_accuracy:.2f}%')
+            logger.info(f'Maxsum accuracy: {max_accuracy:.2f}%')
 
-            log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
+            logger.info("{:-^100s}".format("Best current test accuracy"))
+            #logger.info("test_dataset \t\t\t loss \t\t acc1 \t\t acc5")
+            logger.info( "%-35s\t\t%s\t\t%s\t\t%s\n"%("test_dataset","loss","acc1","acc5")+"-" * 100)
+            for k,test_stats in test_stats_total.items():
+                logger.info("%-35s\t\t%.4f\t\t%.4f\t\t%.4f"%(k, test_stats["loss"], test_stats["acc1"], test_stats["acc5"]))
+                #logger.info('>> test_{}:\t\t\t {:.4f} \t\t {:.4f} \t\t {:.4f}'.format(k, test_stats["loss"], test_stats["acc1"], test_stats["acc5"]))
+            logger.info("-"*100)
+            '''log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                         **{f'test_{k}': v for k, v in test_stats_total.items()},
                         'epoch': epoch,
                         'n_parameters': n_parameters}
 
             if args.output_dir and utils.is_main_process():
                 with (output_dir / "log.txt").open("a") as f:
-                    f.write(json.dumps(log_stats) + "\n")
+                    f.write(json.dumps(log_stats) + "\n")'''
 
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
-    print('Training time {}'.format(total_time_str))
+    logger.info('Training time {}'.format(total_time_str))
 
 
 if __name__ == '__main__':
