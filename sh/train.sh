@@ -1,7 +1,7 @@
 source sh/env.sh
 
 # model
-model="${model_list[1]}" # CHANGE ME
+model="${model_list[0]}" # CHANGE ME
 
 # path
 output_dir="output/${model}"
@@ -29,7 +29,7 @@ if [ ! -d ${output_dir} ];then
 fi
 
 # task 1
-for ((i=4;i<5;i+=1))
+for ((i=0;i<5;i+=1))
 do
 python main.py --device ${train_device} --data-path ${train_data_path} --dataset_list ${dataset_list[i]} --model ${model} --output_dir ${output_dir_task1[i]} --batch-size ${bach_size} --epochs ${epochs} --lr ${lr} --weight-decay ${weight_decay} > ${stdout_log}
 done
