@@ -27,8 +27,8 @@ python main.py --device ${train_device} --data-path ${train_data_path} --dataset
 done
 
 # task2
-python main.py --device ${train_device} --data-path ${train_data_path} --model ${model} --output_dir ${output_dir_task2} --batch-size ${bach_size} --epochs ${epochs} --lr ${lr} --weight-decay ${weight_decay} > ${stdout_log}
+python main.py --device ${train_device} --data-path ${train_data_path} --known_data_source --model ${model} --output_dir ${output_dir_task2} --batch-size ${bach_size} --epochs ${epochs} --lr ${lr} --weight-decay ${weight_decay} > ${stdout_log}
 
 # task3
-python main.py --device ${train_device} --data-path ${train_data_path} --model ${model} --output_dir ${output_dir_task3} --batch-size ${bach_size} --epochs ${epochs} --lr ${lr} --weight-decay ${weight_decay} > ${stdout_log}
+python main.py --device ${train_device} --data-path ${train_data_path} --unknown_data_source --model ${model} --output_dir ${output_dir_task3} --batch-size ${bach_size} --epochs ${epochs} --lr ${lr} --weight-decay ${weight_decay} > ${stdout_log}
 

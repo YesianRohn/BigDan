@@ -30,7 +30,7 @@ python main.py --device ${test_device} --data-path ${test_data_path} --dataset_l
 done
 
 # task2
-python main.py --device ${test_device} --data-path ${test_data_path} --model ${model} --output_dir ${output_dir_task2} --batch-size ${bach_size} --epochs ${epochs} --lr ${lr} --weight-decay ${weight_decay} --test_only --resume ${resume_task2} > ${stdout_log_task2}
+python main.py --device ${test_device} --data-path ${test_data_path} --known_data_source --model ${model} --output_dir ${output_dir_task2} --batch-size ${bach_size} --epochs ${epochs} --lr ${lr} --weight-decay ${weight_decay} --test_only --resume ${resume_task2} > ${stdout_log_task2}
 
 # task3
-python main.py --device ${test_device} --data-path ${test_data_path} --model ${model} --output_dir ${output_dir_task3} --batch-size ${bach_size} --epochs ${epochs} --lr ${lr} --weight-decay ${weight_decay} --test_only --resume ${resume_task3} > ${stdout_log_task3}
+python main.py --device ${test_device} --data-path ${test_data_path} --unknown_data_source --model ${model} --output_dir ${output_dir_task3} --batch-size ${bach_size} --epochs ${epochs} --lr ${lr} --weight-decay ${weight_decay} --test_only --resume ${resume_task3} > ${stdout_log_task3}
