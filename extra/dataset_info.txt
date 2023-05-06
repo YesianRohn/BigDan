@@ -1,0 +1,14 @@
+(base) root@bfead5f57792:/remote-home/share/course23/aicourse_dataset_final# du -sh * | sort -n
+2.0G    10shot_stanford_cars_20211007
+5.2G    10shot_food_101_20211007
+9.1G    10shot_country211_20210924
+32M     10shot_cifar100_20200721
+784M    10shot_oxford_iiit_pets_20211007
+
+(base) root@bfead5f57792:/remote-home/aipj1/test_data# du -sh * | sort -n
+2.4G    10shot_stanford_cars_20211007
+3.7M    ans_all.json
+4.4G    10shot_country211_20210924
+5.0G    10shot_food_101_20211007
+13M     10shot_cifar100_20200721
+863M    10shot_oxford_iiit_pets_20211007
