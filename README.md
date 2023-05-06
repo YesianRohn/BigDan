@@ -31,7 +31,7 @@ Five datasets are given, which include:
 The executable pretrained models are offered by ```timm```. You can check and use the offered pretrained timm models. 
 
 ```Shell
-python main.py --model $selected_model --batch-size 64 --data-path $path_to_dataset --output_dir output/$selected_model --epochs 50 --lr 1e-4 --weight-decay 0.01
+python main.py --batch-size 64 --data-path ../../share/course23/aicourse_dataset_final/ --output_dir output/baseline --epochs 50 --lr 1e-4 --weight-decay 0.01
 ```
 
 There are three modes to execute the code.
@@ -43,7 +43,7 @@ There are three modes to execute the code.
 After obtaining the checkpoint of certain modes, you should operate ```--test_only``` to produce a prediction json file ```pred_all.json```. The file will be produced under your output directory. 
 
 ```Shell
-python main.py --model $selected_model --batch-size 64 --data-path $path_to_dataset --output_dir output/$selected_model --epochs 50 --lr 1e-4 --weight-decay 0.01 --test_only
+python main.py --batch-size 64 --data-path ../../share/course23/aicourse_dataset_final/ --output_dir output/baseline --epochs 50 --lr 1e-4 --weight-decay 0.01 --test_only
 ```
 
 ### Submit
