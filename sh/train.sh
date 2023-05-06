@@ -12,13 +12,21 @@ resume="best_checkpoint.pth"
 resume_task1=("${output_dir_task1[0]}/${resume}" "${output_dir_task1[1]}/${resume}" "${output_dir_task1[2]}/${resume}" "${output_dir_task1[3]}/${resume}" "${output_dir_task1[4]}/${resume}")
 resume_task2="${output_dir_task2}/${resume}"
 resume_task3="${output_dir_task3}/${resume}"
-stdout_log="output/train_stdout.log"
+stdout_log="${output_dir}/train_stdout.log"
 
 # hyper parameters
 bach_size="64"
 epochs="50"
 lr="1e-4"
 weight_decay="0.01"
+
+# dirs
+if [ ! -d "output" ];then
+    mkdir "output"
+fi
+if [ ! -d ${output_dir} ];then
+    mkdir ${output_dir}
+fi
 
 # task 1
 for ((i=4;i<5;i+=1))
