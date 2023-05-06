@@ -146,6 +146,6 @@ def test(data_loader, model, device, dataset_id=None, num_classes_list=None, str
             pred_labels = output.max(-1)[1].tolist()
 
         for id, pred_id in zip(file_ids, pred_labels) :
-            result_json[id] = str_classes_list[pred_id]
+            result_json[id] = str_classes_list[dataset_id][pred_id]
 
     return result_json

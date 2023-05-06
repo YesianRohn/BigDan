@@ -119,7 +119,7 @@ def build_dataset(is_train, args):
         for dataset in args.dataset_list :
             root = os.path.join(args.data_path, dataset, 'train' if is_train else 'val')
             dataset = datasets.ImageFolder(root, transform=transform)
-            class_list += dataset.classes
+            class_list.append(dataset.classes)
             dataset_list.append(dataset)
             nb_classes += len(dataset.classes)
         multi_dataset = MultiImageFolder(dataset_list, transform, known_data_source=args.known_data_source)
