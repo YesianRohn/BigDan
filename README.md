@@ -2,6 +2,7 @@
 人工智能课程大炼丹炉
 
 Artificial Intelligence Course (COMP130031.02) Project of Fudan University.
+## Development Documentation
 Competiton link: https://codalab.lisn.upsaclay.fr/competitions/12725?secret_key=64e1ce9f-10fd-4a9a-b07c-f94d81946931
 
 ## AiCourse-Baseline
