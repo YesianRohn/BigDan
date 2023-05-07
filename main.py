@@ -233,7 +233,9 @@ def get_grade(pred_path):
 
         match_rate = match_count / total_count
         grade += match_rate * 100 / len(dataset)
-
+        
+    n_param=int(pred["n_parameters"])
+    grade= grade*np.exp(-np.log10(n_param / 1e8 + 1))
     print("Grade: "+ str(grade)+ "/100")
 
 def main(args):
