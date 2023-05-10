@@ -65,7 +65,12 @@ class CustomClassifier(torch.nn.Module):
     def forward(self, img, dataset_id=None):
         # TODO: how to leverage dataset_source in training and infernece stage?
         pdtype = img.dtype
-        feature = self.backbone.forward_features(img).to(pdtype)  # 把backbone模型作为特征抽取器
+        # print(self.backbone.forward_features(img))
+        if type(self.backbone.forward_features(img))==tuple:
+            # print(torch.as_tensor(self.backbone.forward_features(img)))
+            feature=torch.as_tensor(self.backbone.forward_features(img)).to(pdtype)
+        else:
+            feature = self.backbone.forward_features(img).to(pdtype)  # 把backbone模型作为特征抽取器
         #print(feature.shape)
         outputs = self.channel_bn(feature)
         outputs = self.layers(outputs)
@@ -232,6 +237,7 @@ def get_grade(pred_path):
                 match_count += 1
 
         match_rate = match_count / total_count
+        print(f"Grade of {dataset[i]}:  {match_rate * 100}/100")
         grade += match_rate * 100 / len(dataset)
         
     n_param=int(pred["n_parameters"])
@@ -530,3 +536,4 @@ if __name__ == '__main__':
     if args.output_dir:
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     main(args)
+    
