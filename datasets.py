@@ -15,6 +15,7 @@ from torchvision.datasets.vision import VisionDataset
 import torch.utils.data as data
 import utils
 import itertools
+import augment
 
 class MultiImageFolder(data.Dataset):
     def __init__(self, dataset_list, transform, loader = default_loader, 
@@ -134,11 +135,21 @@ def build_transform(is_train, args, img_size=224,
         t = []
         t.append(transforms.Resize(img_size))
         t.append(transforms.CenterCrop(img_size))
+        # 添加简单随机裁剪
+        if args.src:
+            t.append(transforms.RandomCrop(img_size))
         if args.flip:
             t.append(transforms.RandomVerticalFlip(p = args.flip))
             t.append(transforms.RandomHorizontalFlip(p = args.flip))
         if args.rotation:
             t.append(transforms.RandomRotation(args.rotation))
+        # 添加灰度、高斯模糊、曝光度的随机调整
+        t.append(transforms.RandomChoice([augment.gray_scale(p=1.0),augment.Solarization(p=1.0),augment.GaussianBlur(p=1.0)]))
+        # 添加颜色抖动
+        if args.color_jitter is not None and not args.color_jitter==0:
+            t.append(transforms.ColorJitter(args.color_jitter, args.color_jitter, args.color_jitter))
+            # t.append(transforms.ColorJitter(brightness=(args.color_jitter + 0.1), contrast=(args.color_jitter + 0.1), saturation=(args.color_jitter + 0.1), hue=0.1))
+            # t.append(transforms.ColorJitter(brightness=(args.color_jitter - 0.1), contrast=(args.color_jitter - 0.1), saturation=(args.color_jitter - 0.1), hue=0.1))
         t.append(transforms.ToTensor())
         t.append(transforms.Normalize(mean, std))
         return transforms.Compose(t)
