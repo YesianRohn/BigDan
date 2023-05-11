@@ -88,6 +88,7 @@ def get_args_parser():
 
     parser.add_argument('--batch_size', default=64, type=int)
     parser.add_argument('--epochs', default=50, type=int)
+    parser.add_argument('--patience', default=5, type=int)
     parser.add_argument('--bce-loss', action='store_true')
     parser.add_argument('--unscale-lr', action='store_true')
 
@@ -246,12 +247,13 @@ def get_grade(pred_path):
     print("Grade: "+ str(grade)+ "/100")
     wandb.log({"grade": grade})
 
+log_time = strftime("%y%m%d-%H%M", localtime())
+
 def main(args):
     
     # print(args.dataset_list)
     utils.init_distributed_mode(args)
-    
-    log_file =  '{}/{}-{}.log'.format(args.output_dir, args.model, strftime("%y%m%d-%H%M", localtime()))
+    log_file =  '{}/{}-{}.log'.format(args.output_dir, args.model, log_time)
     logger.addHandler(logging.FileHandler(log_file))
     #print(args)
     logger.info('=======hyper-parameter used========')
@@ -452,6 +454,7 @@ def main(args):
     logger.info("===========start training: {} epochs===========".format(args.epochs))
     start_time = time.time()
     max_accuracy = 0.0
+    max_epoch = 0
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             data_loader_train.sampler.set_epoch(epoch)
@@ -481,7 +484,7 @@ def main(args):
                 }, checkpoint_path)
              
         # 训练过程中验证
-        if (epoch + 1) % 10 == 0 or epoch + 1 == args.epochs :
+        if (epoch + 1) % 1 == 0 or epoch + 1 == args.epochs :
             test_stats_total = {}
             test_stats_list = []
             for dataset_id, data_loader_val in enumerate(data_loader_val_list):
@@ -494,6 +497,10 @@ def main(args):
                 test_stats_total['{}'.format(args.dataset_list[dataset_id])] = test_stats_one
 
             sum_acc = sum([x['acc1'] for x in test_stats_list])
+            wandb.log({
+                        'eval_acc': sum_acc,
+                           }, step=epoch)
+            
             if max_accuracy < sum_acc:
                 max_accuracy = sum_acc
                 if args.output_dir:
@@ -508,6 +515,10 @@ def main(args):
                             'scaler': loss_scaler.state_dict(),
                             'args': args,
                         }, checkpoint_path)
+            elif epoch - max_epoch > args.patience:
+                logger.info(">>early stop!")
+                break
+            
                 
             logger.info(f'Maxsum accuracy: {max_accuracy:.2f}%')
 
@@ -535,6 +546,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('DeiT training and evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
+    args.output_dir = './output/{}/{}'.format(args.model, log_time)
     if args.output_dir:
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     
@@ -548,6 +560,7 @@ if __name__ == '__main__':
         "batch_size": args.batch_size,
         "dataset": args.dataset_list,
         "epochs": args.epochs,
+        "patience": args.patience,
         "model": args.model,
         "input_size": args.input_size,
         "weight_decay": args.weight_decay,
