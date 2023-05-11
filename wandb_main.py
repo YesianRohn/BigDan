@@ -516,6 +516,7 @@ def main(args):
                             'args': args,
                         }, checkpoint_path)
             elif epoch - max_epoch > args.patience:
+                logger.info(">>early stop!")
                 break
             
                 
