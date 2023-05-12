@@ -30,6 +30,8 @@ import random
 import logging
 import sys
 from time import strftime, localtime
+import os
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -181,7 +183,7 @@ def get_args_parser():
     parser.add_argument('--finetune', default='', help='finetune from checkpoint')
     
     # Dataset parameters
-    parser.add_argument('--data-path', default='../test_data/', type=str,
+    parser.add_argument('--data-path', default='../../share/course23/aicourse_dataset_final', type=str,
                         help='dataset path')
     parser.add_argument('--data-set', default='IMNET', choices=['CIFAR', 'IMNET', 'INAT', 'INAT19'],
                         type=str, help='Image Net dataset path')
@@ -503,6 +505,7 @@ def main(args):
             
             if max_accuracy < sum_acc:
                 max_accuracy = sum_acc
+                max_epoch = epoch
                 if args.output_dir:
                     checkpoint_paths = [output_dir / 'best_checkpoint.pth']
                     for checkpoint_path in checkpoint_paths:
@@ -516,7 +519,7 @@ def main(args):
                             'args': args,
                         }, checkpoint_path)
             elif epoch - max_epoch > args.patience:
-                logger.info(">>early stop!")
+                logger.info('>> early stop!')
                 break
             
                 
@@ -546,7 +549,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('DeiT training and evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
-    args.output_dir = './output/{}/{}'.format(args.model, log_time)
+    args.output_dir = './output/B/{}/{}'.format(args.model, log_time)
     if args.output_dir:
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     
