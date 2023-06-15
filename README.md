@@ -25,12 +25,12 @@ Through extensive experiments conducted on five benchmark datasets and three dif
 ### Pseudo-Labeling
 For a large amount of unlabeled data, the conventional approach is to use the model itself trained on small samples for labeling\cite{DBLP:journals/corr/abs-1906-00562}. However, the performance of the model trained on small samples limits the full utilization of the data. To address this, we propose the idea of "AI learn from AI" to enable the model to learn from the performance of other AI models. Using the SOTA model of each dataset poses a problem of category label misalignment with our data.
 
-Therefore, we introduce the CLIP\cite{radford2021learning} method to process unlabeled data, which can directly match images with textual labels, saving alignment time. Moreover, CLIP (ViT-L/14) performs remarkably well on these five datasets, with an average accuracy of 70 and even surpassing the open-source SOTA models on certain datasets. Additionally, we incorporate template-based prompts (e.g., 'a photo from ..., it's a country') into the textual labels, further enhancing the accuracy of CLIP.
+Therefore, we introduce the CLIP method to process unlabeled data, which can directly match images with textual labels, saving alignment time. Moreover, CLIP (ViT-L/14) performs remarkably well on these five datasets, with an average accuracy of 70 and even surpassing the open-source SOTA models on certain datasets. Additionally, we incorporate template-based prompts (e.g., 'a photo from ..., it's a country') into the textual labels, further enhancing the accuracy of CLIP.
 
 With the labeled data obtained through CLIP, we can apply semi-supervised learning, which combines labeled and unlabeled data for training. We select the top-$k$ confident predictions as pseudo-labeled data and leverage them as a complementary part of the training set.
 
 ### Knowledge Distillation
-Knowledge distillation\cite{DBLP:journals/corr/HintonVD15} is employed to transfer knowledge from large models to small models. The objective is to enable the small model to mimic the performance of the large model by learning from its output probability distribution. In our case, we use the probabilities predicted by the large model as the soft labels, which provide additional information for training the small model.
+Knowledge distillation is employed to transfer knowledge from large models to small models. The objective is to enable the small model to mimic the performance of the large model by learning from its output probability distribution. In our case, we use the probabilities predicted by the large model as the soft labels, which provide additional information for training the small model.
 
 $$ L = L_{hard} + L_{soft}
     = \sum_i^N c_i log p_{student_i} + \sum_i^N p_{teacher_i}^T log \frac{p_{teacher_i}^T}{p_{student_i}^T} \text{，and }  p_i^T = \frac{exp(p_i/T)}{\sum_j^N exp(p_j/T)}
@@ -76,7 +76,7 @@ During the training process, the original training set is augmented with the tra
 | C    | 0.1  | 30       | 0.3          | 1、2、3、4、5 | 43    |
 
 ## Experimental Results
-We conduct extensive experiments on five benchmark datasets: CIFAR-10, CIFAR-100, Country211, EuroSAT, and ISIC2018. For each dataset, we evaluate our approach using three different experimental settings: few-shot learning, semi-supervised learning, and knowledge distillation.
+We conduct extensive experiments on five benchmark datasets: CIFAR-10, CIFAR-100, Country211, Food100, and Stanford-Cars. For each dataset, we evaluate our approach using three different experimental settings: few-shot learning, semi-supervised learning, and knowledge distillation.
 
 The experimental results demonstrate the effectiveness of our proposed approach. Incorporating unlabeled data through pseudo-labeling improves the model's performance consistently across different datasets and experimental settings. Knowledge distillation enables the small model to learn from the large model's knowledge while maintaining a minimal performance loss. Finally, data augmentation techniques significantly enhance the model's performance, leading to substantial improvements on all tested datasets.
 
@@ -89,6 +89,11 @@ The experimental results demonstrate the effectiveness of our proposed approach.
 In this paper, we propose two approaches to address the challenges of limited training data and overfitting in few-shot image classification. Leveraging a large amount of unlabeled data through pseudo-labeling and knowledge distillation improves the model's performance consistently. Additionally, data augmentation techniques enhance the model's ability to generalize and improve its robustness to different variations.
 
 Our experimental results demonstrate the effectiveness of these approaches on five benchmark datasets. The proposed methods can be readily applied to other image classification tasks, especially those with limited training data.
+
+## Reference
+[1] G. Hinton, O. Vinyals, and J. Dean. Distilling the knowledge in a neural network. In NIPS Deep Learning and Representation Learning Workshop, 2015.
+[2] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark, G. Krueger, and I. Sutskever. Learning transferable visual models from natural language supervision, 2021.
+[3] Q. Sun, X. Li, Y. Liu, S. Zheng, T. Chua, and B. Schiele. Learning to self-train for semi-supervised few-shot classification. CoRR, abs/1906.00562
 
 ## Citation
 ```
