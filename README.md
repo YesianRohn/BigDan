@@ -1,10 +1,9 @@
 # BigDan: Better Image-classification Grade with Distillation and Augmentation Network
 
-$$
-Yitong Chen^+<sup>+1</sup>, Yanjun Lin^+<sup>1</sup>, Zheng Qin^+<sup>1</sup>, Siyin Wang^+<sup>1</sup>, Xingsong Ye+<sup>1</sup><br>
+
+Yitong Chen<sup>+1</sup>, Yanjun Lin<sup>+1</sup>, Zheng Qin<sup>+1</sup>, Siyin Wang<sup>+1</sup>, Xingsong Ye<sup>+1</sup><br>
 <sup>1</sup>School of Computer Science, Fudan Univeristy<br>
-^+Equal contribution
-$$
+<sup>+</sup>Equal contribution
 ——Artificial Intelligence Course (COMP130031.02) Project of Fudan University.
 
 ## Abstract
