@@ -92,7 +92,7 @@ Our experimental results demonstrate the effectiveness of these approaches on fi
 
 
 ## Why Bigdan?
-人工智能课程大炼丹（Dan）炉
+人工智能课程大炼丹（Dan）炉  
 Two-member team can be called Fudan, so five-member team should be called Bigdan.
 
 ## About code
