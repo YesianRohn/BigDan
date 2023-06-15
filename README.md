@@ -4,7 +4,7 @@
 Yitong Chen<sup>+1</sup>, Yanjun Lin<sup>+1</sup>, Zheng Qin<sup>+1</sup>, Siyin Wang<sup>+1</sup>, Xingsong Ye<sup>+1</sup><br>
 <sup>1</sup>School of Computer Science, Fudan Univeristy<br>
 <sup>+</sup>Equal contribution  
-——Artificial Intelligence Course (COMP130031.02) Project of Fudan University.
+——Artificial Intelligence Course (COMP130031.02) Project at Fudan University.
 
 ## Abstract
 To address the issues of limited training data and overfitting in few-shot image classification, we propose two approaches: leveraging a large amount of unlabeled data and employing data augmentation techniques. For the former, we introduce an "AI learn from AI" method that enables the model to learn from unlabeled data more effectively. Experimental results demonstrate that incorporating unlabeled data can improve model performance, and knowledge distillation maintains minimal performance loss while reducing the number of parameters. Additionally, data augmentation techniques significantly enhance model performance by applying image transformations in five different ways and adding them to the training set.
@@ -90,7 +90,18 @@ In this paper, we propose two approaches to address the challenges of limited tr
 
 Our experimental results demonstrate the effectiveness of these approaches on five benchmark datasets. The proposed methods can be readily applied to other image classification tasks, especially those with limited training data.
 
+## Citation
+```
+@article{bigdan202307,
+  title={BigDan: Better Image-classification Grade with Distillation and Augmentation Network},
+  author={Chen, Yitong and Lin, Yanjun and Qin, Zheng and Wang, Siyin and Ye, Xingsong},
+  course={Artificial Intelligence A (COMP130031.02), School of Computer Science, Fudan University},
+  year={2023}
+}
 
+```
+
+# By the way
 ## Why Bigdan?
 人工智能课程大炼丹（Dan）炉  
 Two-member team can be called Fudan, so five-member team should be called Bigdan.
