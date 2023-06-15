@@ -91,9 +91,9 @@ In this paper, we propose two approaches to address the challenges of limited tr
 Our experimental results demonstrate the effectiveness of these approaches on five benchmark datasets. The proposed methods can be readily applied to other image classification tasks, especially those with limited training data.
 
 ## Reference
-[1] G. Hinton, O. Vinyals, and J. Dean. Distilling the knowledge in a neural network. In NIPS Deep Learning and Representation Learning Workshop, 2015.
-[2] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark, G. Krueger, and I. Sutskever. Learning transferable visual models from natural language supervision, 2021.
-[3] Q. Sun, X. Li, Y. Liu, S. Zheng, T. Chua, and B. Schiele. Learning to self-train for semi-supervised few-shot classification. CoRR, abs/1906.00562
+[1] G. Hinton, O. Vinyals, and J. Dean. Distilling the knowledge in a neural network. In NIPS Deep Learning and Representation Learning Workshop, 2015.  
+[2] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark, G. Krueger, and I. Sutskever. Learning transferable visual models from natural language supervision, 2021.  
+[3] Q. Sun, X. Li, Y. Liu, S. Zheng, T. Chua, and B. Schiele. Learning to self-train for semi-supervised few-shot classification. CoRR, abs/1906.00562.  
 
 ## Citation
 ```
