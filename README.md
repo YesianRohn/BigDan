@@ -1,7 +1,7 @@
 # BigDan: Better Image-classification Grade with Distillation and Augmentation Network
 
 $$
-Yitong Chen^+<sup>1</sup>, Yanjun Lin^+<sup>1</sup>, Zheng Qin^+<sup>1</sup>, Siyin Wang^+<sup>1</sup>, Xingsong Ye+<sup>1</sup><br>
+Yitong Chen^+<sup>+1</sup>, Yanjun Lin^+<sup>1</sup>, Zheng Qin^+<sup>1</sup>, Siyin Wang^+<sup>1</sup>, Xingsong Ye+<sup>1</sup><br>
 <sup>1</sup>School of Computer Science, Fudan Univeristy<br>
 ^+Equal contribution
 $$
@@ -34,7 +34,7 @@ With the labeled data obtained through CLIP, we can apply semi-supervised learni
 Knowledge distillation\cite{DBLP:journals/corr/HintonVD15} is employed to transfer knowledge from large models to small models. The objective is to enable the small model to mimic the performance of the large model by learning from its output probability distribution. In our case, we use the probabilities predicted by the large model as the soft labels, which provide additional information for training the small model.
 
 $$ L = L_{hard} + L_{soft}
-    = \sum_i^N c_i log p_{student_i} + \sum_i^N p_{teacher_i}^T log \frac{p_{teacher_i}^T}{p_{student_i}^T} \text{，其中 }  p_i^T = \frac{exp(p_i/T)}{\sum_j^N exp(p_j/T)}
+    = \sum_i^N c_i log p_{student_i} + \sum_i^N p_{teacher_i}^T log \frac{p_{teacher_i}^T}{p_{student_i}^T} \text{，and }  p_i^T = \frac{exp(p_i/T)}{\sum_j^N exp(p_j/T)}
 $$
 
 During the training process, we combine the labeled data from the previous pseudo-labeling step with the soft labels obtained from the large model. This enables the small model to leverage the knowledge distilled from the large model while being trained on small samples.
