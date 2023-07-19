@@ -2,7 +2,7 @@
 
 
 Yitong Chen<sup>+1</sup>, Yanjun Lin<sup>+1</sup>, Zheng Qin<sup>+1</sup>, Siyin Wang<sup>+1</sup>, Xingsong Ye<sup>+1</sup><br>
-<sup>1</sup>School of Computer Science, Fudan Univeristy<br>
+<sup>1</sup>School of Computer Science, Fudan University.<br>
 <sup>+</sup>Equal contribution  
 ——Artificial Intelligence Course (COMP130031.02) Project at Fudan University.
 
