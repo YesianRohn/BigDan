@@ -15,7 +15,7 @@ Transfer Learning, Knowledge Distillation, Data Augmentation, Image Classificati
 ## Introduction
 In the field of image classification, few-shot learning is a challenging task with two main difficulties. Firstly, limited training data often leads to poor performance. For example, compared to fine-tuning on the entire CIFAR-100 dataset, ViT-B/16 accuracy drops significantly from 90.20 to 46.31. Secondly, overfitting is a common issue, where the model performs well on the validation set but poorly on the test set. For instance, the validation accuracy reaches 34.83 on the Country211 dataset, while the test accuracy is only 3.24.
 
-To address the issue of limited data, we focus on leveraging a large amount of unlabeled data and enabling the model to learn knowledge from it through pseudo-labeling, knowledge distillation, etc. Additionally, we tackle overfitting by employing data augmentation techniques that allow the model to learn from a wider range of sample variations and improve its robustness.
+To deal with the problem of limited data, we focus on leveraging a large amount of unlabeled data and enabling the model to learn knowledge from it through pseudo-labeling, knowledge distillation, etc. Additionally, we tackle overfitting by employing data augmentation techniques that allow the model to learn from a wider range of sample variations and improve its robustness.
 
 Regarding the utilization of unlabeled data, we propose an "AI learn from AI" approach where one AI model learns from the knowledge of other AI models. In this method, we use an AI model like CLIP to label unlabeled data and incorporate these labels as pseudo-labeled data in the training process. We also use smaller models to learn the soft label probability distribution of larger models, enabling the transfer of additional information and knowledge.
 
@@ -48,7 +48,7 @@ During the training process, we combine the labeled data from the previous pseud
 | A    | ViT-T/16 (0.9)         | 5605862 (0.97)  | 66.53     | 3.89       | 81.30     | 82.07     | 26.21     | 50.44     |
 | A    | ViT-T/16 (0.9)+distill | 5605862 (0.97)  | 84.81     | 5.95       | 81.95     | 86.51     | 55.17     | **61.41** |
 
-- The parentheses after the model names indicate the confidence level of the unlabeled data used, where "raw" means no confidence filtering was applied. The table data are based on 5 sets of data augmentation methods to increase the data.
+> The parentheses after the model names indicate the confidence level of the unlabeled data used, where "raw" means no confidence filtering was applied. The table data are based on 5 sets of data augmentation methods to increase the data.
 
 ## Data Augmentation
 Data augmentation techniques are essential for few-shot learning. By applying various transformations to the input images, we can generate new samples that capture different variations and improve the model's ability to generalize.
