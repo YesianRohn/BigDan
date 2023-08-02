@@ -23,7 +23,7 @@ Through extensive experiments conducted on five benchmark datasets and three dif
 
 ## Knowledge Distillation
 ### Pseudo-Labeling
-For a large amount of unlabeled data, the conventional approach is to use the model itself trained on small samples for labeling\cite{DBLP:journals/corr/abs-1906-00562}. However, the performance of the model trained on small samples limits the full utilization of the data. To address this, we propose the idea of "AI learn from AI" to enable the model to learn from the performance of other AI models. Using the SOTA model of each dataset poses a problem of category label misalignment with our data.
+For a large amount of unlabeled data, the conventional approach is to use the model itself trained on small samples for labeling. However, the performance of the model trained on small samples limits the full utilization of the data. To address this, we propose the idea of "AI learn from AI" to enable the model to learn from the performance of other AI models. Using the SOTA model of each dataset poses a problem of category label misalignment with our data.
 
 Therefore, we introduce the CLIP method to process unlabeled data, which can directly match images with textual labels, saving alignment time. Moreover, CLIP (ViT-L/14) performs remarkably well on these five datasets, with an average accuracy of 70 and even surpassing the open-source SOTA models on certain datasets. Additionally, we incorporate template-based prompts (e.g., 'a photo from ..., it's a country') into the textual labels, further enhancing the accuracy of CLIP.
 
