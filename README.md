@@ -27,7 +27,7 @@ For a large amount of unlabeled data, the conventional approach is to use the mo
 
 Therefore, we introduce the CLIP method to process unlabeled data, which can directly match images with textual labels, saving alignment time. Moreover, CLIP (ViT-L/14) performs remarkably well on these five datasets, with an average accuracy of 70 and even surpassing the open-source SOTA models on certain datasets. Additionally, we incorporate template-based prompts (e.g., 'a photo from ..., it's a country') into the textual labels, further enhancing the accuracy of CLIP.
 
-With the labeled data obtained through CLIP, we can apply semi-supervised learning, which combines labeled and unlabeled data for training. We select the top-$k$ confident predictions as pseudo-labeled data and leverage them as a complementary part of the training set.
+With the labeled data obtained through CLIP, we can apply semi-supervised learning, which combines labeled and unlabeled data for training. We select the top<sub>k</sub> confident predictions as pseudo-labeled data and leverage them as a complementary part of the training set.
 
 ### Knowledge Distillation
 Knowledge distillation is employed to transfer knowledge from large models to small models. The objective is to enable the small model to mimic the performance of the large model by learning from its output probability distribution. In our case, we use the probabilities predicted by the large model as the soft labels, which provide additional information for training the small model.
