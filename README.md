@@ -15,7 +15,7 @@ Transfer Learning, Knowledge Distillation, Data Augmentation, Image Classificati
 ## Introduction
 In the field of image classification, few-shot learning is a challenging task with two main difficulties. Firstly, limited training data often leads to poor performance. For example, compared to fine-tuning on the entire CIFAR-100 dataset, ViT-B/16 accuracy drops significantly from 90.20 to 46.31. Secondly, overfitting is a common issue, where the model performs well on the validation set but poorly on the test set. For instance, the validation accuracy reaches 34.83 on the Country211 dataset, while the test accuracy is only 3.24.
 
-To address the issue of limited data, we focus on leveraging a large amount of unlabeled data and enabling the model to learn knowledge from it through pseudo-labeling, knowledge distillation, etc. Additionally, we tackle overfitting by employing data augmentation techniques that allow the model to learn from a wider range of sample variations and improve its robustness.
+To deal with the problem of limited data, we focus on leveraging a large amount of unlabeled data and enabling the model to learn knowledge from it through pseudo-labeling, knowledge distillation, etc. Additionally, we tackle overfitting by employing data augmentation techniques that allow the model to learn from a wider range of sample variations and improve its robustness.
 
 Regarding the utilization of unlabeled data, we propose an "AI learn from AI" approach where one AI model learns from the knowledge of other AI models. In this method, we use an AI model like CLIP to label unlabeled data and incorporate these labels as pseudo-labeled data in the training process. We also use smaller models to learn the soft label probability distribution of larger models, enabling the transfer of additional information and knowledge.
 
@@ -23,11 +23,11 @@ Through extensive experiments conducted on five benchmark datasets and three dif
 
 ## Knowledge Distillation
 ### Pseudo-Labeling
-For a large amount of unlabeled data, the conventional approach is to use the model itself trained on small samples for labeling\cite{DBLP:journals/corr/abs-1906-00562}. However, the performance of the model trained on small samples limits the full utilization of the data. To address this, we propose the idea of "AI learn from AI" to enable the model to learn from the performance of other AI models. Using the SOTA model of each dataset poses a problem of category label misalignment with our data.
+For a large amount of unlabeled data, the conventional approach is to use the model itself trained on small samples for labeling. However, the performance of the model trained on small samples limits the full utilization of the data. To address this, we propose the idea of "AI learn from AI" to enable the model to learn from the performance of other AI models. Using the SOTA model of each dataset poses a problem of category label misalignment with our data.
 
 Therefore, we introduce the CLIP method to process unlabeled data, which can directly match images with textual labels, saving alignment time. Moreover, CLIP (ViT-L/14) performs remarkably well on these five datasets, with an average accuracy of 70 and even surpassing the open-source SOTA models on certain datasets. Additionally, we incorporate template-based prompts (e.g., 'a photo from ..., it's a country') into the textual labels, further enhancing the accuracy of CLIP.
 
-With the labeled data obtained through CLIP, we can apply semi-supervised learning, which combines labeled and unlabeled data for training. We select the top-$k$ confident predictions as pseudo-labeled data and leverage them as a complementary part of the training set.
+With the labeled data obtained through CLIP, we can apply semi-supervised learning, which combines labeled and unlabeled data for training. We select the top<sub>k</sub> confident predictions as pseudo-labeled data and leverage them as a complementary part of the training set.
 
 ### Knowledge Distillation
 Knowledge distillation is employed to transfer knowledge from large models to small models. The objective is to enable the small model to mimic the performance of the large model by learning from its output probability distribution. In our case, we use the probabilities predicted by the large model as the soft labels, which provide additional information for training the small model.
@@ -48,7 +48,7 @@ During the training process, we combine the labeled data from the previous pseud
 | A    | ViT-T/16 (0.9)         | 5605862 (0.97)  | 66.53     | 3.89       | 81.30     | 82.07     | 26.21     | 50.44     |
 | A    | ViT-T/16 (0.9)+distill | 5605862 (0.97)  | 84.81     | 5.95       | 81.95     | 86.51     | 55.17     | **61.41** |
 
-- The parentheses after the model names indicate the confidence level of the unlabeled data used, where "raw" means no confidence filtering was applied. The table data are based on 5 sets of data augmentation methods to increase the data.
+> The parentheses after the model names indicate the confidence level of the unlabeled data used, where "raw" means no confidence filtering was applied. The table data are based on 5 sets of data augmentation methods to increase the data.
 
 ## Data Augmentation
 Data augmentation techniques are essential for few-shot learning. By applying various transformations to the input images, we can generate new samples that capture different variations and improve the model's ability to generalize.
